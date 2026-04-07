@@ -1,0 +1,73 @@
+{
+    "name": "@blax-software/networking",
+    "version": "0.1.0",
+    "description": "Plug-and-play API + WebSocket client. Framework-agnostic core with optional Vue, Nuxt, and React bindings.",
+    "type": "module",
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs"
+        },
+        "./vue": {
+            "types": "./dist/vue.d.ts",
+            "import": "./dist/vue.js",
+            "require": "./dist/vue.cjs"
+        },
+        "./nuxt": {
+            "types": "./dist/nuxt.d.ts",
+            "import": "./dist/nuxt.js",
+            "require": "./dist/nuxt.cjs"
+        },
+        "./axios": {
+            "types": "./dist/api-axios.d.ts",
+            "import": "./dist/api-axios.js",
+            "require": "./dist/api-axios.cjs"
+        }
+    },
+    "files": [
+        "dist"
+    ],
+    "scripts": {
+        "build": "tsup",
+        "dev": "tsup --watch",
+        "typecheck": "tsc --noEmit",
+        "prepublishOnly": "npm run build"
+    },
+    "peerDependencies": {
+        "axios": ">=1.0.0",
+        "vue": ">=3.3.0"
+    },
+    "peerDependenciesMeta": {
+        "axios": {
+            "optional": true
+        },
+        "vue": {
+            "optional": true
+        }
+    },
+    "devDependencies": {
+        "axios": "^1.7.0",
+        "tsup": "^8.0.0",
+        "typescript": "^5.5.0",
+        "vue": "^3.5.0"
+    },
+    "keywords": [
+        "websocket",
+        "api-client",
+        "http",
+        "fetch",
+        "vue",
+        "nuxt",
+        "react",
+        "realtime"
+    ],
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/blax-software/npm-networking.git"
+    }
+}
