@@ -127,6 +127,9 @@ export function createFromNuxtConfig(options: NuxtNetworkingOptions = {}): {
     ;(globalThis as any).ws = ws
   }
 
+  // In Nuxt, the plugin IS the init — unblock gated sends immediately
+  ws.setAppReady()
+
   return { api, ws }
 }
 
