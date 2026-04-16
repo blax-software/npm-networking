@@ -122,6 +122,11 @@ export function createFromNuxtConfig(options: NuxtNetworkingOptions = {}): {
     vueRef,
   )
 
+  // Expose ws globally for console debugging: `await ws.send('auth.user')`
+  if (!isServer && typeof globalThis !== 'undefined') {
+    ;(globalThis as any).ws = ws
+  }
+
   return { api, ws }
 }
 
@@ -130,3 +135,9 @@ export { createApiClient } from './api'
 export { createWsClient } from './ws'
 export type { ApiClient } from './api'
 export type { WsClient, WsChannel } from './ws'
+
+// Global type declaration — makes `ws` available in browser console and TypeScript
+declare global {
+  // eslint-disable-next-line no-var
+  var ws: WsClient | undefined
+}

@@ -5,8 +5,8 @@ Plug-and-play API + WebSocket client for Vue/Nuxt apps. Framework-agnostic core 
 
 ## Build
 - `pnpm build` — builds via tsup to `dist/`
-- `dist/` is committed to the repo (required for GitHub-based `pnpm` installs)
-- Always rebuild before committing changes: `pnpm build && git add dist/`
+- `dist/` is gitignored — never commit build artifacts
+- `prepare` script runs `tsup` automatically on `git+https://` installs
 - Exports: `.` (core), `./vue`, `./nuxt`, `./axios`
 
 ## WebSocket
