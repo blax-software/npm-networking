@@ -71,7 +71,7 @@ export function createFromNuxtConfig(options: NuxtNetworkingOptions = {}): {
   const serverUrlInternal: string = pub[serverUrlInternalKey] ?? ''
   const wsUrl: string = pub[wsUrlKey] ?? ''
   const wsProtocol: string = pub[wsProtocolKey] ?? 'wss'
-  const appKey: string = pub[appKeyConfigKey] ?? ''
+  const appKey: string = pub[appKeyConfigKey] ?? 'websocket'
 
   // @ts-expect-error Nuxt/Vite global
   const isServer: boolean = import.meta.server ?? false
