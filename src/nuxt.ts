@@ -18,6 +18,15 @@ export interface NuxtNetworkingOptions {
   wsUrlKey?: string
   /** runtimeConfig key for WS protocol — `'wss'` or `'ws'` (default: `'WS_PROTOCOL'`) */
   wsProtocolKey?: string
+  /** runtimeConfig key for the WebSocket app key (default: `'PUSHER_APP_KEY'`) */
+  appKeyConfigKey?: string
+
+  /**
+   * Pass in `useRuntimeConfig()` from the calling plugin/composable.
+   * If omitted the function falls back to the Nuxt auto-import (works only
+   * when Nuxt treats this file as part of the app's auto-import context).
+   */
+  runtimeConfig?: Record<string, any>
 
   /** Additional ApiClientConfig overrides */
   apiConfig?: Partial<ApiClientConfig>
@@ -45,20 +54,24 @@ export function createFromNuxtConfig(options: NuxtNetworkingOptions = {}): {
   api: ApiClient
   ws: WsClient
 } {
-  // Nuxt auto-imports — these are available at plugin/composable scope
-  // @ts-expect-error Nuxt auto-import
-  const config = useRuntimeConfig()
+  // Use provided runtimeConfig or fall back to Nuxt auto-import
+  const config = options.runtimeConfig
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error Nuxt auto-import
+    ?? (typeof useRuntimeConfig === 'function' ? useRuntimeConfig() : {})
 
   const serverUrlKey = options.serverUrlKey ?? 'SERVER_URL'
   const serverUrlInternalKey = options.serverUrlInternalKey ?? 'SERVER_URL_INTERNAL'
   const wsUrlKey = options.wsUrlKey ?? 'WEBS_URL'
   const wsProtocolKey = options.wsProtocolKey ?? 'WS_PROTOCOL'
+  const appKeyConfigKey = options.appKeyConfigKey ?? 'PUSHER_APP_KEY'
 
   const pub = config.public ?? config
   const serverUrl: string = pub[serverUrlKey] ?? ''
   const serverUrlInternal: string = pub[serverUrlInternalKey] ?? ''
   const wsUrl: string = pub[wsUrlKey] ?? ''
   const wsProtocol: string = pub[wsProtocolKey] ?? 'wss'
+  const appKey: string = pub[appKeyConfigKey] ?? ''
 
   // @ts-expect-error Nuxt/Vite global
   const isServer: boolean = import.meta.server ?? false
@@ -84,9 +97,25 @@ export function createFromNuxtConfig(options: NuxtNetworkingOptions = {}): {
   // Nuxt always has Vue — use ref directly for reactive state
   const vueRef = <T>(initial: T): ReactiveRef<T> => ref(initial) as ReactiveRef<T>
 
+  // Validate WebSocket configuration
+  if (!wsUrl) {
+    console.error(
+      `[blax-networking] Missing WebSocket URL. Set runtimeConfig.public.${wsUrlKey} ` +
+      `or the NUXT_PUBLIC_${wsUrlKey} environment variable.`,
+    )
+  }
+  if (!appKey) {
+    console.error(
+      `[blax-networking] Missing WebSocket app key. Set runtimeConfig.public.${appKeyConfigKey} ` +
+      `or the NUXT_PUBLIC_${appKeyConfigKey} environment variable. ` +
+      `This must match PUSHER_APP_KEY on the backend.`,
+    )
+  }
+
   const ws = createWsClient(
     {
-      url: `${wsProtocol === 'wss' ? 'wss' : 'ws'}://${wsUrl}/app/ws`,
+      url: `${wsProtocol === 'wss' ? 'wss' : 'ws'}://${wsUrl}/app/${appKey}`,
+      appKey,
       isServer: () => isServer,
       ...options.wsConfig,
     },

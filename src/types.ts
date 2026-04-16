@@ -131,8 +131,11 @@ export interface ApiClientConfig {
 // ---------------------------------------------------------------------------
 
 export interface WsClientConfig {
-  /** Full WebSocket URL (e.g. `'wss://example.com/app/ws'`). String or getter. */
+  /** Full WebSocket URL (e.g. `'wss://example.com/app/mykey'`). String or getter. */
   url: string | (() => string)
+
+  /** Application key used in the WebSocket path (e.g. `/app/{appKey}`). */
+  appKey?: string
 
   /** Called on each channel establishment to get the current auth token. */
   getAuthToken?: () => string | null | undefined

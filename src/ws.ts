@@ -327,6 +327,7 @@ class WsClientImpl extends EventTarget implements WsClient {
     if (force_reset) this.channels = []
 
     const url = this._getUrl()
+    console.debug('[blax-networking] Connecting to', url)
     this.socket = new WebSocket(url) as WsSocket
     this.is_connecting_socket.value = true
     this._config.onConnectionStateChange?.('connecting')
@@ -377,6 +378,21 @@ class WsClientImpl extends EventTarget implements WsClient {
         this._config.onConnectionStateChange?.('connected')
         // Warmup ping
         socket.send('{"event":"websocket.ping","data":{}}')
+
+        // Detect missing connection_established response (usually app key mismatch)
+        setTimeout(() => {
+          if (this.socket === socket && !socket.socket_id) {
+            const wsUrl = this._getUrl()
+            console.error(
+              '[blax-networking] WebSocket opened but server did not send ' +
+              '"websocket.connection_established" within 5s.\n' +
+              'Connected to: ' + wsUrl + '\n' +
+              'This usually means the app key in the URL does not match any app ' +
+              'configured on the backend (PUSHER_APP_KEY). Check that the path ' +
+              'segment after /app/ matches the server\'s PUSHER_APP_KEY.',
+            )
+          }
+        }, 5000)
       })
 
       socket.addEventListener('message', (raw) => {
@@ -625,5 +641,22 @@ export function createWsClient(
       ? config.isServer()
       : (config.isServer ?? false)
   if (isServer) return createSsrStub(createRef)
+
+  // Validate configuration and warn developers about common issues
+  const url = typeof config.url === 'function' ? config.url() : config.url
+  if (!url || url === 'wss:///app/' || url === 'ws:///app/') {
+    console.error(
+      '[blax-networking] WebSocket URL is empty or malformed: ' + JSON.stringify(url) + '\n' +
+      'Ensure WEBS_URL and PUSHER_APP_KEY are configured. ' +
+      'Expected format: wss://your-ws-host/app/{appKey}',
+    )
+  } else if (url.endsWith('/app/') || url.endsWith('/app')) {
+    console.error(
+      '[blax-networking] WebSocket URL is missing the app key: ' + url + '\n' +
+      'Ensure PUSHER_APP_KEY is set. The URL must end with /app/{appKey} ' +
+      'where {appKey} matches the PUSHER_APP_KEY on the backend.',
+    )
+  }
+
   return new WsClientImpl(config, createRef)
 }
