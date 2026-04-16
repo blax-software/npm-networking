@@ -35,6 +35,7 @@
         "build": "tsup",
         "dev": "tsup --watch",
         "typecheck": "tsc --noEmit",
+        "prepare": "tsup",
         "prepublishOnly": "npm run build"
     },
     "peerDependencies": {
