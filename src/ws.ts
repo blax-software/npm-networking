@@ -642,20 +642,28 @@ export function createWsClient(
       : (config.isServer ?? false)
   if (isServer) return createSsrStub(createRef)
 
-  // Validate configuration and warn developers about common issues
-  const url = typeof config.url === 'function' ? config.url() : config.url
-  if (!url || url === 'wss:///app/' || url === 'ws:///app/') {
-    console.error(
-      '[blax-networking] WebSocket URL is empty or malformed: ' + JSON.stringify(url) + '\n' +
-      'Ensure WEBS_URL and PUSHER_APP_KEY are configured. ' +
-      'Expected format: wss://your-ws-host/app/{appKey}',
-    )
-  } else if (url.endsWith('/app/') || url.endsWith('/app')) {
-    console.error(
-      '[blax-networking] WebSocket URL is missing the app key: ' + url + '\n' +
-      'Ensure PUSHER_APP_KEY is set. The URL must end with /app/{appKey} ' +
-      'where {appKey} matches the PUSHER_APP_KEY on the backend.',
-    )
+  // Validate configuration and warn developers about common issues.
+  // IMPORTANT: only resolve a STRING url here. A function url is lazy by design —
+  // it may depend on a runtime context that does not exist yet at construction
+  // time (e.g. Nuxt's `useRuntimeConfig()`, which throws when called outside a
+  // plugin/setup/lifecycle). Calling it eagerly here crashed module-scope
+  // singletons built with `createVueWsClient({ url: () => useRuntimeConfig()... })`.
+  // Function urls are resolved lazily at connect time instead.
+  if (typeof config.url === 'string') {
+    const url = config.url
+    if (!url || url === 'wss:///app/' || url === 'ws:///app/') {
+      console.error(
+        '[blax-networking] WebSocket URL is empty or malformed: ' + JSON.stringify(url) + '\n' +
+        'Ensure WEBS_URL and PUSHER_APP_KEY are configured. ' +
+        'Expected format: wss://your-ws-host/app/{appKey}',
+      )
+    } else if (url.endsWith('/app/') || url.endsWith('/app')) {
+      console.error(
+        '[blax-networking] WebSocket URL is missing the app key: ' + url + '\n' +
+        'Ensure PUSHER_APP_KEY is set. The URL must end with /app/{appKey} ' +
+        'where {appKey} matches the PUSHER_APP_KEY on the backend.',
+      )
+    }
   }
 
   return new WsClientImpl(config, createRef)
