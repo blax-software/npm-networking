@@ -33,7 +33,7 @@ const api = createApiClient({
 
 const ws = createWsClient({
   url: 'wss://api.example.com/app/ws',
-  getAuthToken: () => api.getBearer(),
+  getAuthToken: () => api.bearerToken,
 })
 
 // REST
@@ -62,7 +62,7 @@ const api = useApiClient({
 
 const ws = useWsClient({
   url: 'wss://api.example.com/app/ws',
-  getAuthToken: () => api.getBearer(),
+  getAuthToken: () => api.bearerToken,
 })
 
 // ws.is_setup, ws.is_opened etc. are Vue refs
@@ -141,21 +141,23 @@ const api = createApiClient({
 
 **ApiClient methods:**
 
-| Method                        | Returns                 | Description                            |
-|-------------------------------|-------------------------|----------------------------------------|
-| `get(path, params?)`          | `Promise<HttpResponse>` | GET request                            |
-| `post(path, data?, params?)`  | `Promise<HttpResponse>` | POST request                           |
-| `put(path, data?, params?)`   | `Promise<HttpResponse>` | PUT request                            |
-| `delete(path, params?)`       | `Promise<HttpResponse>` | DELETE request                         |
-| `patch(path, data?, params?)` | `Promise<HttpResponse>` | PATCH request                          |
-| `csrf(path?)`                 | `Promise<void>`         | Fetch CSRF cookie                      |
-| `setBearer(token)`            | `void`                  | Set auth token                         |
-| `getBearer()`                 | `string \| null`        | Get current auth token                 |
-| `clearBearer()`               | `void`                  | Remove auth token                      |
-| `getServerUrl()`              | `string`                | Resolve current server URL             |
-| `parseError(error)`           | `never`                 | Extract error, notify, and re-throw    |
-| `parseThen(response, msg?)`   | `any`                   | Show success notification, return data |
-| `configure(partial)`          | `void`                  | Update config at runtime               |
+| Method                          | Returns                 | Description                            |
+|---------------------------------|-------------------------|----------------------------------------|
+| `get(path, params?)`            | `Promise<HttpResponse>` | GET request                            |
+| `post(path, data?, headers?)`   | `Promise<HttpResponse>` | POST request                           |
+| `put(path, data?)`              | `Promise<HttpResponse>` | PUT request                            |
+| `delete(path, headers?)`        | `Promise<HttpResponse>` | DELETE request                         |
+| `patch(path, data?)`            | `Promise<HttpResponse>` | PATCH request                          |
+| `csrf(path?)`                   | `Promise<HttpResponse>` | Fetch CSRF cookie                      |
+| `setBearer(token \| null)`      | `void`                  | Set the auth token (pass `null` to clear) |
+| `bearerToken`                   | `string` *(getter)*     | Current auth token                     |
+| `loadBearerFromStorage()`       | `string \| null`        | Load the token from the storage adapter |
+| `getBackendUrl()`               | `string`                | Resolve current server base URL        |
+| `clientAsset(path)`             | `string`                | Build a backend asset URL              |
+| `cleanseUrl(url)`               | `string`                | Normalize a URL/path                   |
+| `parseError(error)`             | `never`                 | Extract error, notify, and re-throw    |
+| `parseThen(response, msg?)`     | `any`                   | Show success notification, return data |
+| `configure(partial)`            | `void`                  | Update config at runtime               |
 
 ### `createWsClient(config: WsClientConfig, createRef?): WsClient`
 
